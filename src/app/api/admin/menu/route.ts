@@ -34,3 +34,41 @@ export async function GET() {
 
   return NextResponse.json(meals);
 }
+
+export async function PATCH(request: Request) {
+  const session = await auth();
+  if (!session || session.user?.role !== "SUPER_ADMIN") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const { id, startTime, endTime } = body;
+
+  if (!id || !startTime || !endTime) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+    return NextResponse.json({ error: "Invalid time format" }, { status: 400 });
+  }
+
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  const start = sh * 60 + sm;
+  const end = eh * 60 + em;
+  if (start >= end) {
+    return NextResponse.json({ error: "Start time must be before end time" }, { status: 400 });
+  }
+
+  try {
+    await prisma.mealWindow.update({
+      where: { id },
+      data: { startTime, endTime },
+    });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Unable to update meal window" }, { status: 500 });
+  }
+}

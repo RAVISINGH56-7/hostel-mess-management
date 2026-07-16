@@ -96,7 +96,7 @@ export default function StaffAdminLoginPage() {
             id="email"
             name="email"
             type="email"
-            placeholder="you@bbit.edu.in"
+            placeholder="you@gmail.com"
             required
             autoComplete="email"
             className="w-full rounded-lg bg-surface-2 border border-line px-4 py-3 text-ink placeholder:text-ink-soft/40 font-mono text-sm focus:outline-none focus:border-saffron/60 focus:ring-2 focus:ring-saffron/10 transition-all"

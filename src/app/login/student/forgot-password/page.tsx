@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
               id="username"
               name="username"
               type="text"
-              placeholder="e.g. 2026BTCS0418"
+              placeholder="e.g. 27600122064"
               required
               autoComplete="username"
               className="w-full rounded-lg bg-surface-2 border border-line px-4 py-3 text-ink placeholder:text-ink-soft/40 font-mono text-sm focus:outline-none focus:border-curry/60 focus:ring-2 focus:ring-curry/10 transition-all"

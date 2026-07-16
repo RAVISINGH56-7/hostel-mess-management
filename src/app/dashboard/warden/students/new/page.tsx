@@ -142,6 +142,8 @@ export default function NewStudentPage() {
             <FormField
               label="Semester"
               type="number"
+              min={1}
+              max={8}
               {...register("semester", { valueAsNumber: true })}
               error={errors.semester?.message}
             />
