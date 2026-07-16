@@ -33,14 +33,11 @@ export default function StaffAdminLoginPage() {
       });
 
       if (!result?.ok || result?.error) {
-        setError(
-          `Invalid credentials. Make sure you selected the correct role (${role}).`
-        );
+        setError(`Invalid credentials. Make sure you selected the correct role (${role}).`);
         setLoading(false);
         return;
       }
 
-      // Fetch the session to verify the role
       const res = await fetch("/api/auth/session", { cache: "no-store" });
       const session = await res.json();
       const userRole = session?.user?.role;
@@ -52,12 +49,9 @@ export default function StaffAdminLoginPage() {
         router.push("/dashboard/warden");
         router.refresh();
       } else {
-        // Role mismatch — sign out and show a clear error
         await signOut({ redirect: false });
         setError(
-          `Access denied. This portal is for ${
-            role === "admin" ? "Admin (SUPER_ADMIN)" : "Warden"
-          } accounts only.`
+          `Access denied. This portal is for ${role === "admin" ? "Admin (SUPER_ADMIN)" : "Warden"} accounts only.`
         );
         setLoading(false);
       }
@@ -77,7 +71,6 @@ export default function StaffAdminLoginPage() {
       formSubtitle="Select your role and sign in to access administrative controls."
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Role selector */}
         <div className="space-y-1.5">
           <label
             htmlFor="role"
@@ -103,7 +96,6 @@ export default function StaffAdminLoginPage() {
           </div>
         </div>
 
-        {/* Email */}
         <div className="space-y-1.5">
           <label
             htmlFor="email"
@@ -122,7 +114,6 @@ export default function StaffAdminLoginPage() {
           />
         </div>
 
-        {/* Password */}
         <div className="space-y-1.5">
           <label
             htmlFor="password"
@@ -156,19 +147,15 @@ export default function StaffAdminLoginPage() {
         </div>
 
         {error && (
-          <p className="text-sm text-brick rounded-lg bg-brick/10 px-3 py-2">
-            {error}
-          </p>
+          <p className="text-sm text-brick rounded-lg bg-brick/10 px-3 py-2">{error}</p>
         )}
 
-        {/* Default credentials hint (remove in production) */}
         {process.env.NODE_ENV !== "production" && (
           <p className="text-[11px] text-ink-soft/60 font-mono">
             Default admin: admin@tiffin.edu / admin123
           </p>
         )}
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
@@ -177,9 +164,7 @@ export default function StaffAdminLoginPage() {
           {loading && (
             <span className="inline-block h-4 w-4 rounded-full border-2 border-[#101713]/25 border-t-[#101713] animate-spin" />
           )}
-          {loading
-            ? "Signing in…"
-            : `Sign in as ${role === "admin" ? "Admin" : "Warden"}`}
+          {loading ? "Signing in…" : `Sign in as ${role === "admin" ? "Admin" : "Warden"}`}
         </button>
       </form>
 

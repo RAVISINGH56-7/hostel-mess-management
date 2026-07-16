@@ -7,9 +7,7 @@ const secret =
   process.env.NEXTAUTH_SECRET ||
   (() => {
     if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        "AUTH_SECRET or NEXTAUTH_SECRET must be set in production."
-      );
+      throw new Error("AUTH_SECRET or NEXTAUTH_SECRET must be set in production.");
     }
     return "dev-secret-change-in-production";
   })();
@@ -28,10 +26,8 @@ const protectedPaths: { path: string; roles: string[] }[] = [
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Always allow NextAuth's own endpoints through
   if (pathname.startsWith("/api/auth")) return NextResponse.next();
 
-  // Public password reset endpoints (no auth required)
   if (
     pathname.startsWith("/api/student/forgot-password") ||
     pathname.startsWith("/api/student/reset-password")
@@ -42,16 +38,11 @@ export default async function middleware(request: NextRequest) {
   const rule = protectedPaths.find((r) => pathname.startsWith(r.path));
   if (!rule) return NextResponse.next();
 
-  // Use the same cookie name logic as auth.ts
   const isProd = process.env.NODE_ENV === "production";
-  const cookieName = isProd
-    ? "__Host-next-auth.session-token"
-    : "next-auth.session-token";
-
+  const cookieName = isProd ? "__Host-next-auth.session-token" : "next-auth.session-token";
   const token = await getToken({ req: request, secret, cookieName });
 
-  // helper to set security headers on every response
-  const secureResponse = (res: ReturnType<typeof NextResponse.next | typeof NextResponse.redirect>) => {
+  const secureResponse = (res: NextResponse) => {
     try {
       res.headers.set("X-Content-Type-Options", "nosniff");
       res.headers.set("X-Frame-Options", "DENY");
@@ -72,8 +63,7 @@ export default async function middleware(request: NextRequest) {
 
   if (!token) {
     const loginUrl =
-      pathname.startsWith("/dashboard/student") ||
-      pathname.startsWith("/api/student")
+      pathname.startsWith("/dashboard/student") || pathname.startsWith("/api/student")
         ? "/login/student"
         : "/login/staff-admin";
     return secureResponse(NextResponse.redirect(new URL(loginUrl, request.url)));

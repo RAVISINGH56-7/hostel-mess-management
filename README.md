@@ -6,11 +6,11 @@ A Next.js 15 application for managing hostel mess operations — student QR pass
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router)
-- **Auth**: NextAuth v5 (Auth.js) — JWT strategy with CredentialsProvider
-- **Database**: PostgreSQL via Prisma ORM
-- **Styling**: Tailwind CSS v4
-- **QR**: `qrcode.react` + `html5-qrcode`
+- Framework: Next.js 15 (App Router)
+- Auth: NextAuth v5 (Auth.js) — JWT strategy with CredentialsProvider
+- Database: PostgreSQL via Prisma ORM
+- Styling: Tailwind CSS v4
+- QR: qrcode.react + html5-qrcode
 
 ---
 
@@ -51,7 +51,7 @@ npm run db:seed
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open http://localhost:3000.
 
 ---
 
@@ -60,12 +60,12 @@ Open [http://localhost:3000](http://localhost:3000).
 ### Admin
 | Field | Value |
 |---|---|
-| Portal | `/login/staff-admin` → select **Admin** |
+| Portal | `/login/staff-admin` → select Admin |
 | Email | `admin@tiffin.edu` |
 | Password | `admin123` |
 
 ### Warden
-Wardens are created by the Admin in `/dashboard/admin/wardens`. They log in at `/login/staff-admin` → select **Warden** with the email and password set during creation.
+Wardens are created by the Admin in `/dashboard/admin/wardens`. They log in at `/login/staff-admin` → select Warden with the email and password set during creation.
 
 ### Staff (scanner)
 Staff are created by the Admin in `/dashboard/admin/staff`. They log in at `/login/staff`.
@@ -79,7 +79,7 @@ Students are registered by a Warden in `/dashboard/warden/students/new`.
 | Roll Number | The roll number entered during registration |
 | Default Password | Last 4 digits of roll number + `_pass` |
 
-**Example**: roll number `27600122064` → password `2064_pass`
+Example: roll number `27600122064` → password `2064_pass`
 
 Students should change their password after first login.
 
@@ -102,15 +102,15 @@ Students should change their password after first login.
 
 ## Common Issues
 
-**Can't sign in even with correct credentials**
+Can't sign in even with correct credentials
 - Make sure `NEXTAUTH_URL` matches the URL you're visiting (including `http://` vs `https://`).
 - Run `npm run dev` (not `--experimental-https`) in development. HTTPS in dev causes cookie issues.
 - After seeding, verify the admin user exists: `npx prisma studio`.
 
-**"Warden not assigned to a block" error**
+"Warden not assigned to a block" error
 - Go to Admin → Wardens and ensure the warden has a block assigned.
 
-**QR code not scanning**
+QR code not scanning
 - `QR_SECRET` must be the same value that was set when the student was created. If you change it, existing QR tokens become invalid.
 
 ---
@@ -123,6 +123,7 @@ The seed script (`prisma/seed.ts`) creates:
 - Default meal windows (Breakfast, Lunch, Snacks, Dinner)
 
 Run it with:
+
 ```bash
 npm run db:seed
 ```

@@ -11,9 +11,7 @@ const authSecret =
   process.env.NEXTAUTH_SECRET ||
   (() => {
     if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        "AUTH_SECRET or NEXTAUTH_SECRET must be set in production."
-      );
+      throw new Error("AUTH_SECRET or NEXTAUTH_SECRET must be set in production.");
     }
     return "dev-secret-change-in-production";
   })();
@@ -27,20 +25,13 @@ if (!process.env.NEXTAUTH_URL) {
 
 export const authConfig: NextAuthConfig = {
   trustHost: true,
-  // NOTE: PrismaAdapter removed — CredentialsProvider with JWT strategy
-  // does not persist sessions to DB; the adapter causes Account table
-  // insert failures on every credentials sign-in.
   cookies: {
     sessionToken: {
-      name: isProd
-        ? "__Host-next-auth.session-token"
-        : "next-auth.session-token",
+      name: isProd ? "__Host-next-auth.session-token" : "next-auth.session-token",
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        // In development we run plain HTTP (next dev), so secure must be false.
-        // In production set it to true.
         secure: isProd,
       },
     },
@@ -70,16 +61,11 @@ export const authConfig: NextAuthConfig = {
 
           if (!user) return null;
 
-          const isValid = await bcrypt.compare(
-            credentials.password as string,
-            user.passwordHash
-          );
+          const isValid = await bcrypt.compare(credentials.password as string, user.passwordHash);
           if (!isValid) return null;
 
-          // If a role hint is supplied (admin/warden portal), enforce it.
           if (credentials.role) {
-            const expectedRole =
-              credentials.role === "admin" ? "SUPER_ADMIN" : "WARDEN";
+            const expectedRole = credentials.role === "admin" ? "SUPER_ADMIN" : "WARDEN";
             if (user.role !== expectedRole) return null;
           }
 
@@ -100,7 +86,6 @@ export const authConfig: NextAuthConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // @ts-expect-error – role is added in next-auth.d.ts
         token.role = user.role;
         token.name = user.name;
         token.email = user.email;

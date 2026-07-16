@@ -22,7 +22,6 @@ export default function StudentLoginPage() {
     const password = formData.get("password") as string;
 
     try {
-      // Students log in with roll number (stored as username), no role hint needed
       const result = await signIn("credentials", {
         username,
         password,
@@ -35,7 +34,6 @@ export default function StudentLoginPage() {
         return;
       }
 
-      // Fetch session to verify it is a student account
       const res = await fetch("/api/auth/session", { cache: "no-store" });
       const session = await res.json();
       const userRole = session?.user?.role;
@@ -44,11 +42,8 @@ export default function StudentLoginPage() {
         router.push("/dashboard/student");
         router.refresh();
       } else {
-        // Non-student account tried to log in here — sign them out
         await signOut({ redirect: false });
-        setError(
-          "This portal is for students only. Please use the Admin & Warden sign-in instead."
-        );
+        setError("This portal is for students only. Please use the Admin & Warden sign-in instead.");
         setLoading(false);
       }
     } catch {
@@ -67,7 +62,6 @@ export default function StudentLoginPage() {
       formSubtitle="Enter your roll number and password to continue."
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Roll number */}
         <div className="space-y-1.5">
           <label
             htmlFor="roll"
@@ -86,7 +80,6 @@ export default function StudentLoginPage() {
           />
         </div>
 
-        {/* Password */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label
@@ -128,12 +121,9 @@ export default function StudentLoginPage() {
         </div>
 
         {error && (
-          <p className="text-sm text-brick rounded-lg bg-brick/10 px-3 py-2">
-            {error}
-          </p>
+          <p className="text-sm text-brick rounded-lg bg-brick/10 px-3 py-2">{error}</p>
         )}
 
-        {/* Default password hint */}
         <p className="text-[11px] text-ink-soft/60 font-mono">
           Default password: last 4 digits of roll number + _pass
           <br />
@@ -141,7 +131,6 @@ export default function StudentLoginPage() {
           <span className="text-ink-soft">2064_pass</span>
         </p>
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
