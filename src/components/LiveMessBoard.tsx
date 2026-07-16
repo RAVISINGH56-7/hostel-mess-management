@@ -1,37 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-type MealKey = "breakfast" | "lunch" | "snacks" | "dinner";
+import {
+  getMealLabel,
+  getMealWindowStatus,
+  getIstMinutesSinceMidnight,
+} from "@/lib/mealWindows";
 
 type MealWindow = {
-  key: MealKey;
-  label: string;
-  start: string; // "HH:MM" 24h
-  end: string;
+  id: string;
+  meal: string;
+  startTime: string;
+  endTime: string;
+  isLive: boolean;
 };
 
-const MEALS: MealWindow[] = [
-  { key: "breakfast", label: "Breakfast", start: "08:00", end: "09:30" },
-  { key: "lunch", label: "Lunch", start: "12:30", end: "14:30" },
-  { key: "snacks", label: "Snacks", start: "17:00", end: "19:00" },
-  { key: "dinner", label: "Dinner", start: "20:00", end: "22:00" },
-];
-
 type Status = "serving" | "upcoming" | "closed";
-
-function toMinutes(time: string) {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
-}
-
-function getStatus(meal: MealWindow, nowMinutes: number): Status {
-  const start = toMinutes(meal.start);
-  const end = toMinutes(meal.end);
-  if (nowMinutes >= start && nowMinutes <= end) return "serving";
-  if (nowMinutes < start) return "upcoming";
-  return "closed";
-}
 
 const STATUS_META: Record<
   Status,
@@ -44,6 +28,8 @@ const STATUS_META: Record<
 
 export default function LiveMessBoard() {
   const [now, setNow] = useState<Date | null>(null);
+  const [mealWindows, setMealWindows] = useState<MealWindow[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setNow(new Date());
@@ -51,7 +37,25 @@ export default function LiveMessBoard() {
     return () => clearInterval(interval);
   }, []);
 
-  const nowMinutes = now ? now.getHours() * 60 + now.getMinutes() : 0;
+  useEffect(() => {
+    async function loadMealWindows() {
+      try {
+        const res = await fetch("/api/meal-windows");
+        if (!res.ok) {
+          throw new Error("Failed to load meal windows");
+        }
+        const data = await res.json();
+        setMealWindows(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadMealWindows();
+  }, []);
+
+  const nowMinutes = getIstMinutesSinceMidnight(now ?? new Date());
 
   return (
     <div className="w-full rounded-2xl border border-line bg-ink text-surface theme-sensitive-shadow transition-colors duration-300">
@@ -76,38 +80,53 @@ export default function LiveMessBoard() {
       </div>
 
       <ul className="divide-y divide-surface/10">
-        {MEALS.map((meal, i) => {
-          const status = now ? getStatus(meal, nowMinutes) : "upcoming";
-          const meta = STATUS_META[status];
-          return (
-            <li
-              key={meal.key}
-              className="flap-in flex items-center justify-between gap-4 px-5 py-4 transition-colors duration-300"
-              style={{ animationDelay: `${i * 90}ms` }}
-            >
-              <div className="flex items-baseline gap-3">
-                <span className="font-display text-lg italic text-surface/40">
-                  0{i + 1}
-                </span>
-                <span className="font-display text-xl tracking-wide">
-                  {meal.label}
-                </span>
-              </div>
-              <div className="text-right">
-                <p className="font-mono text-xs tabular-nums text-surface/50">
-                  {meal.start} – {meal.end}
-                </p>
-                <p
-                  className={`mt-0.5 flex items-center justify-end gap-1.5 font-mono text-xs uppercase tracking-[0.15em] ${meta.text}`}
-                >
-                  <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
-                  {meta.label}
-                  {status === "upcoming" ? ` ${meal.start}` : ""}
-                </p>
-              </div>
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <li key={i} className="flex items-center justify-between gap-4 px-5 py-4 opacity-50">
+              <div className="h-5 w-32 rounded-full bg-surface-2" />
+              <div className="h-4 w-20 rounded-full bg-surface-2" />
             </li>
-          );
-        })}
+          ))
+        ) : mealWindows.length > 0 ? (
+          mealWindows.map((window, i) => {
+            const status = getMealWindowStatus(window, nowMinutes);
+            const meta = STATUS_META[
+              status === "ok" ? "serving" : status === "not_started" ? "upcoming" : "closed"
+            ];
+            return (
+              <li
+                key={window.id}
+                className="flap-in flex items-center justify-between gap-4 px-5 py-4 transition-colors duration-300"
+                style={{ animationDelay: `${i * 90}ms` }}
+              >
+                <div className="flex items-baseline gap-3">
+                  <span className="font-display text-lg italic text-surface/40">
+                    0{i + 1}
+                  </span>
+                  <span className="font-display text-xl tracking-wide">
+                    {window.meal.charAt(0) + window.meal.slice(1).toLowerCase()}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <p className="font-mono text-xs tabular-nums text-surface/50">
+                    {window.startTime} – {window.endTime}
+                  </p>
+                  <p
+                    className={`mt-0.5 flex items-center justify-end gap-1.5 font-mono text-xs uppercase tracking-[0.15em] ${meta.text}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
+                    {meta.label}
+                    {status === "not_started" ? ` ${window.startTime}` : ""}
+                  </p>
+                </div>
+              </li>
+            );
+          })
+        ) : (
+          <li className="px-5 py-6 text-center text-sm text-surface/70">
+            Meal windows are not configured yet.
+          </li>
+        )}
       </ul>
 
       <div className="border-t border-surface/10 px-5 py-3">

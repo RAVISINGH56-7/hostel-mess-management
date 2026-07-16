@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getIstMinutesSinceMidnight, getMealWindowStatus } from "@/lib/mealWindows";
 
 export async function GET() {
   const session = await auth();
@@ -12,25 +13,15 @@ export async function GET() {
     orderBy: [{ startTime: "asc" }],
   });
 
-  // Determine which meals are currently being served
-  const now = new Date();
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const nowMinutes = getIstMinutesSinceMidnight();
 
-  const meals = mealWindows.map((mw) => {
-    const [sh, sm] = mw.startTime.split(":").map(Number);
-    const [eh, em] = mw.endTime.split(":").map(Number);
-    const start = sh * 60 + sm;
-    const end = eh * 60 + em;
-    const isLive = nowMinutes >= start && nowMinutes <= end;
-
-    return {
-      id: mw.id,
-      meal: mw.meal,
-      startTime: mw.startTime,
-      endTime: mw.endTime,
-      isLive,
-    };
-  });
+  const meals = mealWindows.map((mw) => ({
+    id: mw.id,
+    meal: mw.meal,
+    startTime: mw.startTime,
+    endTime: mw.endTime,
+    isLive: getMealWindowStatus(mw, nowMinutes) === "ok",
+  }));
 
   return NextResponse.json(meals);
 }

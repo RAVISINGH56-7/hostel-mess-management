@@ -21,15 +21,31 @@ import {
   ClockAlert,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import { getMealLabel } from "@/lib/mealWindows";
 
 type MealKey = "breakfast" | "lunch" | "snacks" | "dinner";
 
-const MEALS: { key: MealKey; label: string; icon: typeof Coffee }[] = [
+type MealWindow = {
+  id: string;
+  meal: string;
+  startTime: string;
+  endTime: string;
+  isLive: boolean;
+};
+
+const DEFAULT_MEALS: { key: MealKey; label: string; icon: typeof Coffee }[] = [
   { key: "breakfast", label: "Breakfast", icon: Coffee },
-  { key: "lunch",     label: "Lunch",     icon: Soup   },
-  { key: "snacks",    label: "Snacks",    icon: Cookie },
-  { key: "dinner",    label: "Dinner",    icon: Moon   },
+  { key: "lunch", label: "Lunch", icon: Soup },
+  { key: "snacks", label: "Snacks", icon: Cookie },
+  { key: "dinner", label: "Dinner", icon: Moon },
 ];
+
+const MEAL_ICONS: Record<MealKey, typeof Coffee> = {
+  breakfast: Coffee,
+  lunch: Soup,
+  snacks: Cookie,
+  dinner: Moon,
+};
 
 type ScanStatus = "success" | "duplicate" | "invalid" | "suspended" | "not_started" | "time_over" | "error";
 
@@ -131,6 +147,7 @@ const VALID_STATUSES: ScanStatus[] = ["success", "duplicate", "invalid", "suspen
 
 export default function ScannerPage() {
   const [meal, setMeal] = useState<MealKey>("lunch");
+  const [mealWindows, setMealWindows] = useState<MealWindow[]>([]);
   const [log, setLog] = useState<ScanResult[]>([]);
   const [lastResult, setLastResult] = useState<ScanResult | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -267,6 +284,25 @@ export default function ScannerPage() {
   }, [scanning]);
 
   useEffect(() => {
+    async function loadMealWindows() {
+      try {
+        const res = await fetch("/api/meal-windows");
+        if (!res.ok) throw new Error("Failed to load meal windows");
+        const data: MealWindow[] = await res.json();
+        setMealWindows(data);
+        if (data.length > 0) {
+          const firstKey = data[0].meal.toLowerCase() as MealKey;
+          if (!data.some((win) => win.meal.toLowerCase() === meal)) {
+            setMeal(firstKey);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadMealWindows();
+
     let cancelled = false;
     const load = () => {
       if (cancelled) return;
@@ -316,20 +352,33 @@ export default function ScannerPage() {
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft">Scanning for</p>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {MEALS.map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => setMeal(key)}
-                className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${
-                  meal === key
-                    ? "border-ink bg-ink text-surface"
-                    : "border-line bg-surface text-ink-soft hover:text-ink"
-                }`}
-              >
-                <Icon size={16} />
-                {label}
-              </button>
-            ))}
+            {(mealWindows.length > 0 ? mealWindows : DEFAULT_MEALS.map((meal) => ({
+              id: meal.key,
+              meal: meal.key.toUpperCase(),
+              startTime: "",
+              endTime: "",
+              isLive: false,
+            }))).map((window) => {
+              const key = window.meal.toLowerCase() as MealKey;
+              const label = mealWindows.length > 0
+                ? getMealLabel(window.meal as any)
+                : DEFAULT_MEALS.find((m) => m.key === key)?.label ?? key;
+              const Icon = MEAL_ICONS[key];
+              return (
+                <button
+                  key={window.id}
+                  onClick={() => setMeal(key)}
+                  className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${
+                    meal === key
+                      ? "border-ink bg-ink text-surface"
+                      : "border-line bg-surface text-ink-soft hover:text-ink"
+                  }`}
+                >
+                  <Icon size={16} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
           {scanning && (
             <p className="mt-2 text-center font-mono text-[11px] text-ink-soft uppercase tracking-widest">

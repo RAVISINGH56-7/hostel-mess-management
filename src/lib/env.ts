@@ -8,14 +8,30 @@ export function getEnvOrThrow(name: string): string {
   return value;
 }
 
+export function getSiteUrl(): string {
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  if (process.env.NODE_ENV === "development") {
+    return "http://localhost:3000";
+  }
+  throw new Error(
+    "Missing NEXTAUTH_URL or VERCEL_URL in environment variables. Please set NEXTAUTH_URL for production deployments."
+  );
+}
+
 export function getQrSecret(): string {
-  return process.env.QR_SECRET || (() => {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("QR_SECRET must be set in production");
-    }
-    console.warn("WARNING: QR_SECRET not set. Using insecure dev fallback.");
-    return "dev-secret-change-in-production";
-  })();
+  if (process.env.QR_SECRET) {
+    return process.env.QR_SECRET;
+  }
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("QR_SECRET must be set in production");
+  }
+  console.warn("WARNING: QR_SECRET not set. Using insecure dev fallback.");
+  return "dev-secret-change-in-production";
 }
 
 // src/lib/env.ts

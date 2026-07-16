@@ -3,15 +3,28 @@ import { NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
+import { getSiteUrl } from "./env";
 import bcrypt from "bcrypt";
 import NextAuth from "next-auth";
 
 const authSecret =
   process.env.AUTH_SECRET ||
   process.env.NEXTAUTH_SECRET ||
-  "dev-secret-change-in-production";
+  (() => {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "AUTH_SECRET or NEXTAUTH_SECRET must be set in production."
+      );
+    }
+    return "dev-secret-change-in-production";
+  })();
 
 const isProd = process.env.NODE_ENV === "production";
+const nextAuthUrl = getSiteUrl();
+
+if (!process.env.NEXTAUTH_URL) {
+  process.env.NEXTAUTH_URL = nextAuthUrl;
+}
 
 export const authConfig: NextAuthConfig = {
   trustHost: true,
@@ -33,6 +46,7 @@ export const authConfig: NextAuthConfig = {
       credentials: {
         username: { label: "Email or Username", type: "text" },
         password: { label: "Password", type: "password" },
+        role: { label: "Role", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
@@ -59,6 +73,14 @@ export const authConfig: NextAuthConfig = {
           );
           if (!isValid) {
             throw new Error("Invalid credentials");
+          }
+
+          if (credentials.role) {
+            const expectedRole =
+              credentials.role === "admin" ? "SUPER_ADMIN" : "WARDEN";
+            if (user.role !== expectedRole) {
+              throw new Error("Invalid credentials");
+            }
           }
 
           const { passwordHash: _, ...userWithoutPassword } = user;

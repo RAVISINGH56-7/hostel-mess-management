@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-import { getResetTokenSecret } from "@/lib/env";
+import { getResetTokenSecret, getSiteUrl } from "@/lib/env";
 
 export async function POST(request: Request) {
   try {
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/login/student/reset-password?token=${resetToken}`;
+    const resetUrl = `${getSiteUrl()}/login/student/reset-password?token=${resetToken}`;
 
     console.log("╔══════════════════════════════════════════════╗");
     console.log("║        PASSWORD RESET LINK (DEV MODE)       ║");

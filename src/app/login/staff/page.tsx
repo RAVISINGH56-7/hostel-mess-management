@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ScanLine } from "lucide-react";
@@ -31,22 +31,25 @@ export default function StaffLoginPage() {
       redirect: false,
     });
 
-    if (result?.error) {
+    if (!result?.ok || result?.error) {
       setError("Invalid credentials");
       setLoading(false);
-    } else {
-      const res = await fetch("/api/auth/session");
-      const session = await res.json();
-      if (session?.user?.role === "STAFF") {
-        router.push("/scanner");
-      } else if (session?.user?.role === "SUPER_ADMIN") {
-        router.push("/dashboard/admin");
-      } else {
-        setError("Access denied. Use the admin/warden portal instead.");
-        setLoading(false);
-      }
-      router.refresh();
+      return;
     }
+
+    const res = await fetch("/api/auth/session", { cache: "no-store" });
+    const session = await res.json();
+    if (session?.user?.role === "STAFF") {
+      router.push("/scanner");
+    } else if (session?.user?.role === "SUPER_ADMIN") {
+      router.push("/dashboard/admin");
+    } else {
+      await signOut({ redirect: false });
+      setError("Access denied. Use the admin/warden portal instead.");
+      setLoading(false);
+      return;
+    }
+    router.refresh();
   };
 
   return (

@@ -27,22 +27,23 @@ export default function StudentLoginPage() {
       redirect: false,
     });
 
-    if (result?.error) {
+    if (!result?.ok || result?.error) {
       setError("Invalid username or password");
       setLoading(false);
+      return;
+    }
+
+    const res = await fetch("/api/auth/session", { cache: "no-store" });
+    const session = await res.json();
+    if (session?.user?.role === "STUDENT") {
+      router.push("/dashboard/student");
+      router.refresh();
     } else {
-      const res = await fetch("/api/auth/session");
-      const session = await res.json();
-      if (session?.user?.role === "STUDENT") {
-        router.push("/dashboard/student");
-        router.refresh();
-      } else {
-        await signOut({ redirect: false });
-        setError(
-          "This portal is for students only. Use the admin & warden sign in."
-        );
-        setLoading(false);
-      }
+      await signOut({ redirect: false });
+      setError(
+        "This portal is for students only. Use the admin & warden sign in."
+      );
+      setLoading(false);
     }
   };
 

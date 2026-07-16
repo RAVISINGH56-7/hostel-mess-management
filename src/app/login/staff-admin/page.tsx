@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShieldCheck, Eye, EyeOff, ChevronDown } from "lucide-react";
@@ -27,25 +27,31 @@ export default function StaffAdminLoginPage() {
     const result = await signIn("credentials", {
       username: email,
       password,
+      role,
       redirect: false,
     });
 
-    if (result?.error) {
+    if (!result?.ok || result?.error) {
       setError("Invalid credentials");
       setLoading(false);
-    } else {
-      const res = await fetch("/api/auth/session");
-      const session = await res.json();
-      if (session?.user?.role === "SUPER_ADMIN") {
-        router.push("/dashboard/admin");
-      } else if (session?.user?.role === "WARDEN") {
-        router.push("/dashboard/warden");
-      } else {
-        setError("Invalid role");
-        setLoading(false);
-      }
-      router.refresh();
+      return;
     }
+
+    const res = await fetch("/api/auth/session", { cache: "no-store" });
+    const session = await res.json();
+    if (session?.user?.role === "SUPER_ADMIN" && role === "admin") {
+      router.push("/dashboard/admin");
+    } else if (session?.user?.role === "WARDEN" && role === "warden") {
+      router.push("/dashboard/warden");
+    } else {
+      await signOut({ redirect: false });
+      setError(
+        `This portal is for ${role === "admin" ? "admin" : "warden"} accounts only.`
+      );
+      setLoading(false);
+      return;
+    }
+    router.refresh();
   };
 
   return (

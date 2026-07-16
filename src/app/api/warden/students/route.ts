@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { studentFormSchema } from "@/lib/validations/student";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { getQrSecret } from "@/lib/env";
 import { v4 as uuid } from "uuid";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
@@ -50,12 +51,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // Require QR secret to be configured
-    const QR_SECRET = process.env.QR_SECRET;
-    if (!QR_SECRET) {
-      console.error("QR_SECRET not configured");
-      return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
-    }
+    const QR_SECRET = getQrSecret();
 
     // Generate passId and QR secret (JWT)
     const passId = `TF-${username.toUpperCase()}`;

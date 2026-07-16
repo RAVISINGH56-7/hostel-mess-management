@@ -5,7 +5,14 @@ import type { NextRequest } from "next/server";
 const secret =
   process.env.AUTH_SECRET ||
   process.env.NEXTAUTH_SECRET ||
-  "dev-secret-change-in-production";
+  (() => {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "AUTH_SECRET or NEXTAUTH_SECRET must be set in production."
+      );
+    }
+    return "dev-secret-change-in-production";
+  })();
 
 const protectedPaths: { path: string; roles: string[] }[] = [
   { path: "/dashboard/admin", roles: ["SUPER_ADMIN"] },
