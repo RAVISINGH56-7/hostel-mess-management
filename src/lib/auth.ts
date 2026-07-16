@@ -6,12 +6,16 @@ import { getSiteUrl } from "./env";
 import bcrypt from "bcrypt";
 import NextAuth from "next-auth";
 
+const isBuild = process.env.NEXT_PHASE === "phase-production-build";
 const authSecret =
   process.env.AUTH_SECRET ||
   process.env.NEXTAUTH_SECRET ||
   (() => {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production" && !isBuild) {
       throw new Error("AUTH_SECRET or NEXTAUTH_SECRET must be set in production.");
+    }
+    if (process.env.NODE_ENV === "production") {
+      console.warn("AUTH_SECRET not set during build; using temporary fallback for build-time execution.");
     }
     return "dev-secret-change-in-production";
   })();

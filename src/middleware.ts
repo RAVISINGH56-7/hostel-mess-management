@@ -2,12 +2,16 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const isBuild = process.env.NEXT_PHASE === "phase-production-build";
 const secret =
   process.env.AUTH_SECRET ||
   process.env.NEXTAUTH_SECRET ||
   (() => {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production" && !isBuild) {
       throw new Error("AUTH_SECRET or NEXTAUTH_SECRET must be set in production.");
+    }
+    if (process.env.NODE_ENV === "production") {
+      console.warn("AUTH_SECRET not set during build; using temporary fallback for build-time execution.");
     }
     return "dev-secret-change-in-production";
   })();
