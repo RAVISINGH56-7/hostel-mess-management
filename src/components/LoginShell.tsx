@@ -82,11 +82,11 @@ export default function LoginShell({
             className="flex items-center gap-3 transition-opacity hover:opacity-80"
           >
             <Image
-              src="https://www.bbit.edu.in/assets/frontend_template/img/logo.png"
-              alt="BBIT"
+              src="/logo.png"
+              alt="BBIT logo"
               width={130}
               height={36}
-              className="h-9 w-auto"
+              className="h-9 w-auto rounded-2xl bg-white/95 p-1.5 shadow-sm"
             />
           </Link>
           <div className="flex items-center gap-3">

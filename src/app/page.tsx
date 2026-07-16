@@ -39,11 +39,11 @@ export default function Home() {
             className="flex items-center gap-3 transition-opacity hover:opacity-80"
           >
             <Image
-              src="https://www.bbit.edu.in/assets/frontend_template/img/logo.png"
-              alt="BBIT"
+              src="/logo.png"
+              alt="BBIT logo"
               width={140}
               height={38}
-              className="h-9 w-auto sm:h-10 bg-#eaefe9 rounded-sm p-0.5"
+              className="h-9 w-auto sm:h-10 rounded-2xl bg-white/95 p-1.5 shadow-sm"
             />
           </Link>
           <div className="theme-toggle-rotate flex items-center">

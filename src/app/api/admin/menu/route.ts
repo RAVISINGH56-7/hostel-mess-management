@@ -61,6 +61,24 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Start time must be before end time" }, { status: 400 });
   }
 
+  const otherWindows = await prisma.mealWindow.findMany({
+    where: {
+      id: { not: id },
+    },
+  });
+
+  const overlaps = otherWindows.some((mw) => {
+    const [osh, osm] = mw.startTime.split(":").map(Number);
+    const [oeh, oem] = mw.endTime.split(":").map(Number);
+    const otherStart = osh * 60 + osm;
+    const otherEnd = oeh * 60 + oem;
+    return start < otherEnd && end > otherStart;
+  });
+
+  if (overlaps) {
+    return NextResponse.json({ error: "Meal times must not overlap with other meal windows" }, { status: 400 });
+  }
+
   try {
     await prisma.mealWindow.update({
       where: { id },

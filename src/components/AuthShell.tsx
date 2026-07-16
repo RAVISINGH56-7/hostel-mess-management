@@ -24,11 +24,11 @@ export default function AuthShell({
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="https://www.bbit.edu.in/assets/frontend_template/img/logo.png"
-              alt="BBIT College Logo"
+              src="/logo.png"
+              alt="BBIT logo"
               width={120}
               height={30}
-              className="h-10 w-auto object-contain"
+              className="h-10 w-auto rounded-2xl bg-white/95 p-1.5 shadow-sm object-contain"
             />
             <div className="flex flex-col leading-none">
               <span className="font-display text-xl tracking-tight text-ink">
