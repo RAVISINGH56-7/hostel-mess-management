@@ -30,18 +30,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Warden not assigned to block" }, { status: 400 });
     }
 
-    const { name, email, phone, room, course, semester } = parsed.data;
+    const { name, email, phone, room, course, semester, rollNumber } = parsed.data;
     const diet = (formData.get("diet") as string) || null;
 
-    // Generate username and password
-    const rollPrefix = course === "B.Tech" ? "btcs" : "btec";
-    const sem = String(semester).padStart(2, "0");
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const username = `2026${rollPrefix}${randomNum}`;
-    const password = `pass${randomNum}`;
+    const username = rollNumber;
+    const password = `${rollNumber.slice(-4)}_pass`;
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user with provided username
     const user = await prisma.user.create({
       data: {
         role: "STUDENT",
