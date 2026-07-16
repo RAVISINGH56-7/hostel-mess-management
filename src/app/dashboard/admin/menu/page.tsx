@@ -121,14 +121,16 @@ export default function AdminMenuPage() {
         <p className="mt-1 text-ink-soft">Meal windows and their current status.</p>
 
         {loading ? (
-          <div className="mt-8 grid gap-5">
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
+          <div className="mt-8 rounded-3xl border border-line bg-surface p-6 shadow-sm theme-sensitive-shadow">
+            <div className="grid gap-5">
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
           </div>
         ) : meals.length === 0 ? (
-          <div className="mt-8 rounded-2xl border border-dashed border-line bg-surface p-10 text-center text-ink-soft">
+          <div className="mt-8 rounded-3xl border border-dashed border-line bg-surface p-10 text-center text-ink-soft shadow-sm theme-sensitive-shadow">
             No meal windows configured.
           </div>
         ) : (
@@ -139,7 +141,7 @@ export default function AdminMenuPage() {
               return (
                 <div
                   key={meal.id}
-                  className={`rounded-2xl border bg-surface p-6 transition-all ${
+                  className={`rounded-3xl border bg-surface p-6 shadow-sm transition-all duration-200 ${
                     meal.isLive ? "border-curry/40" : "border-line"
                   }`}
                 >
@@ -164,7 +166,7 @@ export default function AdminMenuPage() {
                                 type="time"
                                 value={editStartTime}
                                 onChange={(e) => setEditStartTime(e.target.value)}
-                                className="rounded-xl border border-line bg-ink px-3 py-2 text-sm text-ink"
+                                className="rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm text-ink placeholder:text-ink-soft focus:border-curry focus:outline-none focus:ring-2 focus:ring-curry/10"
                               />
                             </label>
                             <label className="flex items-center gap-2 font-mono text-sm text-ink-soft">
@@ -173,7 +175,7 @@ export default function AdminMenuPage() {
                                 type="time"
                                 value={editEndTime}
                                 onChange={(e) => setEditEndTime(e.target.value)}
-                                className="rounded-xl border border-line bg-ink px-3 py-2 text-sm text-ink"
+                                className="rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm text-ink placeholder:text-ink-soft focus:border-curry focus:outline-none focus:ring-2 focus:ring-curry/10"
                               />
                             </label>
                           </div>
@@ -218,7 +220,7 @@ export default function AdminMenuPage() {
                         ) : (
                           <button
                             onClick={() => beginEdit(meal)}
-                            className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-surface-2"
+                            className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-medium text-ink-soft transition duration-200 hover:bg-surface-2"
                           >
                             <Edit3 size={16} />
                             Edit time
