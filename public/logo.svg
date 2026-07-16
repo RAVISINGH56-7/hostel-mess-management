@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Shield / crest shape -->
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5b84e"/>
+      <stop offset="100%" stop-color="#e8a33d"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield background -->
+  <path d="M60 8 L108 30 L108 70 C108 95 85 112 60 120 C35 112 12 95 12 70 L12 30 Z"
+        fill="#1a231e" stroke="url(#gold)" stroke-width="3"/>
+  <!-- Inner shield -->
+  <path d="M60 18 L98 36 L98 66 C98 88 79 103 60 110 C41 103 22 88 22 66 L22 36 Z"
+        fill="#222e27" stroke="#f5b84e" stroke-width="1.5" opacity="0.6"/>
+  <!-- Tiffin box icon (simplified tiffin) -->
+  <rect x="38" y="44" width="44" height="30" rx="4" fill="#d9705a" stroke="#f5b84e" stroke-width="1.5"/>
+  <rect x="38" y="40" width="44" height="8" rx="3" fill="#e8a33d" stroke="#f5b84e" stroke-width="1.2"/>
+  <rect x="42" y="48" width="16" height="10" rx="2" fill="#7ea47a" opacity="0.8"/>
+  <rect x="62" y="48" width="16" height="10" rx="2" fill="#7ea47a" opacity="0.8"/>
+  <rect x="42" y="60" width="16" height="10" rx="2" fill="#7ea47a" opacity="0.6"/>
+  <rect x="62" y="60" width="16" height="10" rx="2" fill="#7ea47a" opacity="0.6"/>
+  <!-- Handle on top -->
+  <path d="M52 40 Q52 30 60 28 Q68 30 68 40"
+        stroke="#f5b84e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Flame / grain motif -->
+  <path d="M60 76 L56 84 L60 82 L64 84 Z" fill="#f5b84e" opacity="0.4"/>
+</svg>

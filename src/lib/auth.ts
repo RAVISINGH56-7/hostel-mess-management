@@ -1,0 +1,131 @@
+// src/lib/auth.ts
+import { NextAuthConfig } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { prisma } from "./prisma";
+import { getSiteUrl } from "./env";
+import bcrypt from "bcrypt";
+import NextAuth from "next-auth";
+
+const authSecret =
+  process.env.AUTH_SECRET ||
+  process.env.NEXTAUTH_SECRET ||
+  (() => {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "AUTH_SECRET or NEXTAUTH_SECRET must be set in production."
+      );
+    }
+    return "dev-secret-change-in-production";
+  })();
+
+const isProd = process.env.NODE_ENV === "production";
+const nextAuthUrl = getSiteUrl();
+
+if (!process.env.NEXTAUTH_URL) {
+  process.env.NEXTAUTH_URL = nextAuthUrl;
+}
+
+export const authConfig: NextAuthConfig = {
+  trustHost: true,
+  // NOTE: PrismaAdapter removed — CredentialsProvider with JWT strategy
+  // does not persist sessions to DB; the adapter causes Account table
+  // insert failures on every credentials sign-in.
+  cookies: {
+    sessionToken: {
+      name: isProd
+        ? "__Host-next-auth.session-token"
+        : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        // In development we run plain HTTP (next dev), so secure must be false.
+        // In production set it to true.
+        secure: isProd,
+      },
+    },
+  },
+  providers: [
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        username: { label: "Email or Username", type: "text" },
+        password: { label: "Password", type: "password" },
+        role: { label: "Role", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          const user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { email: credentials.username as string },
+                { username: credentials.username as string },
+              ],
+            },
+          });
+
+          if (!user) return null;
+
+          const isValid = await bcrypt.compare(
+            credentials.password as string,
+            user.passwordHash
+          );
+          if (!isValid) return null;
+
+          // If a role hint is supplied (admin/warden portal), enforce it.
+          if (credentials.role) {
+            const expectedRole =
+              credentials.role === "admin" ? "SUPER_ADMIN" : "WARDEN";
+            if (user.role !== expectedRole) return null;
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error("Authorize error:", error);
+          return null;
+        }
+      },
+    }),
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        // @ts-expect-error – role is added in next-auth.d.ts
+        token.role = user.role;
+        token.name = user.name;
+        token.email = user.email;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/login/staff-admin",
+    error: "/login/staff-admin",
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  secret: authSecret,
+};
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
