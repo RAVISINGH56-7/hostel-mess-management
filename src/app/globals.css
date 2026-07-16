@@ -1,0 +1,285 @@
+@import "tailwindcss";
+
+/* Dark palette (default) */
+:root {
+  --color-bg: #101713;
+  --color-surface: #1a231e;
+  --color-surface-2: #222e27;
+  --color-ink: #f4f6f2;
+  --color-ink-soft: #a9b6ae;
+  --color-line: #2c3a33;
+  --color-saffron: #f5b84e;
+  --color-saffron-soft: #3a2e1a;
+  --color-curry: #7ea47a;
+  --color-curry-soft: #1f2a1d;
+  --color-brick: #d9705a;
+  --color-brick-soft: #3b1f1a;
+  --color-surface-rgb: 26, 35, 30;
+  --shadow-card: 0 18px 50px -25px rgba(0,0,0,0.5);
+}
+
+/* Light palette */
+:root[data-theme="light"] {
+  --color-bg: #eaefe9;
+  --color-surface: #fbfaf6;
+  --color-surface-2: #f1efe8;
+  --color-ink: #20302a;
+  --color-ink-soft: #4d5d54;
+  --color-line: #c9d2cb;
+  --color-saffron: #e8a33d;
+  --color-saffron-soft: #f7e3c1;
+  --color-curry: #5b7857;
+  --color-curry-soft: #dde7da;
+  --color-brick: #b5533c;
+  --color-brick-soft: #f3ddd5;
+  --color-surface-rgb: 251, 250, 246;
+  --shadow-card: 0 18px 50px -25px rgba(32,48,42,0.45);
+}
+
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-line: var(--color-line);
+  --color-saffron: var(--color-saffron);
+  --color-saffron-soft: var(--color-saffron-soft);
+  --color-curry: var(--color-curry);
+  --color-curry-soft: var(--color-curry-soft);
+  --color-brick: var(--color-brick);
+  --color-brick-soft: var(--color-brick-soft);
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
+}
+
+* {
+  border-color: var(--color-line);
+}
+
+html, body {
+  transition: color 0.3s, background-color 0.3s;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-soft);
+}
+
+/* coupon-notch */
+.coupon-notch {
+  position: relative;
+}
+.coupon-notch::before,
+.coupon-notch::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: var(--color-bg);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.coupon-notch::before {
+  left: -11px;
+}
+.coupon-notch::after {
+  right: -11px;
+}
+
+@keyframes flap-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scaleY(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+.flap-in {
+  animation: flap-in 0.45s ease-out both;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(91, 120, 87, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(91, 120, 87, 0);
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 2.2s ease-out infinite;
+}
+
+/* Theme-sensitive shadow helper */
+.theme-sensitive-shadow {
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Redesigned Landing Page Animations ── */
+
+/* Fade-up entrance for staggered elements */
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Slower, more dramatic entrance for hero */
+@keyframes fade-up-hero {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-up-hero {
+  animation: fade-up-hero 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Logo shimmer */
+@keyframes logo-shimmer {
+  0% {
+    filter: brightness(1) saturate(1);
+  }
+  50% {
+    filter: brightness(1.15) saturate(1.1);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+.logo-shimmer {
+  animation: logo-shimmer 4s ease-in-out infinite;
+}
+
+/* Card lift glow */
+@keyframes card-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 184, 78, 0);
+  }
+  100% {
+    box-shadow: 0 0 30px -4px rgba(245, 184, 78, 0.15);
+  }
+}
+
+/* Floating particles - ambient background */
+@keyframes float-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.15;
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.2);
+    opacity: 0.2;
+  }
+  66% {
+    transform: translate(-10px, 15px) scale(0.9);
+    opacity: 0.1;
+  }
+}
+
+@keyframes float-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.1;
+  }
+  33% {
+    transform: translate(-25px, 15px) scale(1.1);
+    opacity: 0.15;
+  }
+  66% {
+    transform: translate(20px, -25px) scale(0.8);
+    opacity: 0.08;
+  }
+}
+
+@keyframes float-3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.08;
+  }
+  50% {
+    transform: translate(15px, 20px) scale(1.3);
+    opacity: 0.12;
+  }
+}
+
+/* Hover lift - applied via Tailwind hover groups, but base transform for the card */
+.card-hover-lift {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* Card accent glow on hover - per accent color */
+.card-glow-saffron:hover {
+  box-shadow: 0 0 40px -8px rgba(245, 184, 78, 0.2);
+}
+.card-glow-curry:hover {
+  box-shadow: 0 0 40px -8px rgba(126, 164, 122, 0.2);
+}
+.card-glow-brick:hover {
+  box-shadow: 0 0 40px -8px rgba(217, 112, 90, 0.2);
+}
+
+/* Theme toggle rotation on hover */
+.theme-toggle-rotate:hover svg {
+  transform: rotate(180deg);
+}
+.theme-toggle-rotate svg {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Gradient text utility */
+.gradient-text-saffron {
+  background: linear-gradient(135deg, #f5b84e 0%, #e8a33d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  WARDEN
+  STAFF
+  STUDENT
+}
+
+model Hostel {
+  id     String  @id @default(cuid())
+  name   String
+  blocks Block[]
+}
+
+model Block {
+  id       String   @id @default(cuid())
+  name     String
+  hostelId String
+  hostel   Hostel   @relation(fields: [hostelId], references: [id])
+  wardens  User[]   @relation("WardenBlock")
+  students Student[]
+}
+
+model User {
+  id               String    @id @default(cuid())
+  role             Role
+  email            String?   @unique
+  username         String?   @unique
+  passwordHash     String
+  name             String
+  phone            String?
+  photoUrl         String?   // profile picture for wardens
+  blockId          String?
+  block            Block?    @relation("WardenBlock", fields: [blockId], references: [id])
+  student          Student?  // 1:1 if role = STUDENT
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+}
+
+model Student {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  blockId    String
+  block      Block    @relation(fields: [blockId], references: [id])
+  room       String
+  rollNumber String?
+  course     String
+  semester   Int
+  diet       String?  // VEG | NON_VEG
+  photoUrl   String?
+  passId     String   @unique
+  qrSecret   String   @unique
+  status     String   @default("ACTIVE")  // ACTIVE | SUSPENDED
+  meals      MealScan[]
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  SNACKS
+  DINNER
+}
+
+model MealWindow {
+  id        String   @id @default(cuid())
+  blockId   String?
+  meal      MealType
+  startTime String
+  endTime   String
+}
+
+model MealScan {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  meal      MealType
+  scannedAt DateTime @default(now())
+  scannedBy String   // staff user id
+  status    String   // SUCCESS | DUPLICATE
+  date      DateTime @db.Date
+
+  @@unique([studentId, meal, date])
+}
