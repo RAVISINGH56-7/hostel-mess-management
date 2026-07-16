@@ -11,9 +11,22 @@ const authSecret =
   process.env.NEXTAUTH_SECRET ||
   "dev-secret-change-in-production";
 
+const isProd = process.env.NODE_ENV === "production";
+
 export const authConfig: NextAuthConfig = {
   trustHost: true,
   adapter: PrismaAdapter(prisma),
+  cookies: {
+    sessionToken: {
+      name: isProd ? "__Host-next-auth.session-token" : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProd,
+      },
+    },
+  },
   providers: [
     CredentialsProvider({
       name: "credentials",
