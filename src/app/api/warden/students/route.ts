@@ -96,24 +96,43 @@ export async function POST(request: Request) {
     );
 
     let photoUrl: string | undefined;
-    const photoFile = formData.get("photo") as File | null;
-    if (photoFile && photoFile.size > 0) {
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-      const maxSize = 2 * 1024 * 1024;
-      if (!allowedTypes.includes(photoFile.type)) {
-        return NextResponse.json({ error: "Invalid photo type" }, { status: 400 });
-      }
-      if (photoFile.size > maxSize) {
-        return NextResponse.json({ error: "Photo too large (max 2 MB)" }, { status: 400 });
-      }
+    const photoEntry = formData.get("photo");
+    const isFileLike = typeof File !== "undefined" && photoEntry instanceof File;
 
-      const buffer = Buffer.from(await photoFile.arrayBuffer());
-      const ext = photoFile.type === "image/png" ? "png" : "jpg";
-      const filename = `student-${user.id}-${uuid()}.${ext}`;
-      const uploadDir = path.join(process.cwd(), "public/uploads");
-      await mkdir(uploadDir, { recursive: true });
-      await writeFile(path.join(uploadDir, filename), buffer, { mode: 0o644 });
-      photoUrl = `/uploads/${filename}`;
+    if (isFileLike && photoEntry.size > 0) {
+      try {
+        const maxSize = 2 * 1024 * 1024;
+        const normalizedType = photoEntry.type.toLowerCase();
+        const normalizedName = photoEntry.name.toLowerCase();
+        const allowedByType = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif", "image/heic", "image/heif"].includes(normalizedType);
+        const allowedByName = /\.(jpe?g|png|webp|avif|heic|heif)$/i.test(normalizedName);
+
+        if (!allowedByType && !allowedByName) {
+          console.warn(`Skipping photo upload for student ${user.id}: unsupported file type ${photoEntry.type || normalizedName}`);
+        } else if (photoEntry.size > maxSize) {
+          console.warn(`Skipping photo upload for student ${user.id}: file too large (${photoEntry.size} bytes)`);
+        } else {
+          let ext = "jpg";
+          if (normalizedType.includes("png") || normalizedName.endsWith(".png")) {
+            ext = "png";
+          } else if (normalizedType.includes("webp") || normalizedName.endsWith(".webp")) {
+            ext = "webp";
+          } else if (normalizedType.includes("avif") || normalizedName.endsWith(".avif")) {
+            ext = "avif";
+          } else if (normalizedType.includes("heic") || normalizedName.includes("heic") || normalizedName.endsWith(".heif")) {
+            ext = "heic";
+          }
+
+          const buffer = Buffer.from(await photoEntry.arrayBuffer());
+          const filename = `student-${user.id}-${uuid()}.${ext}`;
+          const uploadDir = path.join(process.cwd(), "public/uploads");
+          await mkdir(uploadDir, { recursive: true });
+          await writeFile(path.join(uploadDir, filename), buffer, { mode: 0o644 });
+          photoUrl = `/uploads/${filename}`;
+        }
+      } catch (photoError) {
+        console.warn(`Photo upload failed for student ${user.id}:`, photoError);
+      }
     }
 
     await prisma.student.create({

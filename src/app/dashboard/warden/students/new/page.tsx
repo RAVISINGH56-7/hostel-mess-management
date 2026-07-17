@@ -51,8 +51,21 @@ export default function NewStudentPage() {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        setServerError(err.error?.message || "Registration failed");
+        let message = "Registration failed";
+        try {
+          const err = await res.json();
+          if (typeof err.error === "string") {
+            message = err.error;
+          } else if (err.error?.message) {
+            message = err.error.message;
+          } else if (err.error?.issues?.[0]?.message) {
+            message = err.error.issues[0].message;
+          }
+        } catch {
+          const text = await res.text();
+          if (text) message = text;
+        }
+        setServerError(message);
         setLoading(false);
         return;
       }
@@ -177,6 +190,7 @@ export default function NewStudentPage() {
             </label>
             <input
               type="file"
+              name="photo"
               accept="image/*"
               onChange={handlePhotoChange}
               className="w-full rounded-xl border border-line bg-ink px-4 py-3 text-sm text-surface file:mr-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-1 file:text-xs file:text-ink-soft"
